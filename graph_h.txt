@@ -1,0 +1,137 @@
+#ifndef GRAPH_H_INCLUDED
+#define GRAPH_H_INCLUDED
+using namespace std;
+
+class Numar_noduri
+{
+public:
+    static int numar_noduri;
+};
+
+class Vector:Numar_noduri
+{
+ protected:
+     int dimensiune;
+     int nr_noduri;
+     int *vec;
+public:
+    int lin_nr_elem = 0;
+    Vector(int *v, int dim);
+    Vector(int nr_nod);
+    void set_ele_poz_vec(int poz, int ele){vec[poz] = ele;}
+    void set_nr_noduri(int nod){ nr_noduri = nod; }
+    void set_dimensiune(int dim){dimensiune = dim; }
+    void alloc(int dim);
+    int get_ele_poz(int poz){ return vec[poz];}
+    int get_nr_noduri(){return nr_noduri;}
+    int get_dimensiune(){return dimensiune;}
+    ~Vector(){ delete []vec;}
+    Vector& operator =(const Vector &v2);
+    friend ostream& operator <<(ostream& out, const Vector &v2);
+    friend istream& operator >>(istream& in, Vector &v2);
+};
+
+class Lista: public Numar_noduri
+{
+    Vector *l;
+public:
+    Vector viz;
+    Lista();
+    int get_dim_linie(int i);
+    int get_elem_linie_poz(int i, int poz);
+    int get_nr_noduri(){return numar_noduri;}
+    friend istream& operator >>(istream& in, Lista &lis);
+    friend ostream& operator <<(ostream& out, const Lista &lis);
+    void alloc(int dimen);
+    ~Lista(){  delete[]l;}
+    Lista& operator =(const Lista &lis);
+};
+
+class Matrice:Numar_noduri
+{
+  int **mat;
+  int dimensiune;
+public:
+    Vector viz;
+   Matrice();
+  ~Matrice()
+  {
+    for (int i = 0; i < numar_noduri; i++)
+        delete []mat[i];
+    delete []mat;
+  }
+  void set_dimensiune(int dim){ dimensiune = dim;}
+  void alloc_mat(int dimen);
+  void set_elem_poz(int i, int j, int ele);
+  int get_elem_mat(int i, int j) {return mat[i][j];}
+  int get_nr_noduri(){return numar_noduri;}
+  friend istream& operator >>(istream& in, Matrice &ma);
+  friend ostream& operator <<(ostream& out, const Matrice &ma);
+  Matrice& operator =(const Matrice &mat);
+
+};
+
+class Graf
+{
+protected:
+    Lista L;
+    Matrice A;
+public:
+
+    Graf(int nr_noduri)
+    {
+    L.viz.alloc(nr_noduri);
+    A.set_dimensiune(nr_noduri);
+    A.alloc_mat(nr_noduri);
+    L.alloc(nr_noduri);
+    }
+    virtual void BF(int start) = 0;
+    virtual void DF(int start) = 0;
+    virtual void conexitate(int start) = 0;
+    virtual void DF_conex(int start) = 0;
+    virtual ~Graf(){}
+
+
+};
+
+class Graf_Neorientat: public Graf
+{
+
+public:
+    friend ostream& operator <<(ostream& out, const Graf_Neorientat &G);
+
+    Graf_Neorientat(Lista lis, int nr_noduri)
+    : Graf(nr_noduri)
+    {
+        this->L = lis;
+    }
+    void BF(int start);
+    void DF(int start);
+    void DF_conex(int start);
+    void conexitate(int start);
+    Graf_Neorientat& operator =(const Graf_Neorientat &graph);
+    bool operator==(Graf_Neorientat &g2);
+    ~Graf_Neorientat(){}
+};
+
+class Graf_Orientat: public Graf
+{
+public:
+    friend ostream& operator <<(ostream& out, const Graf_Orientat &G);
+    Graf_Orientat(Matrice AA, int nr_noduri)
+    : Graf(nr_noduri)
+    {
+        this->A = AA;
+    }
+    void BF(int start);
+    void DF(int start);
+    void DF_conex(int start);
+    void conexitate(int start);
+    bool operator ==(Graf_Orientat &g2);
+    Graf_Orientat& operator =(const Graf_Orientat &graph);
+
+
+    ~Graf_Orientat(){}
+};
+
+#endif // GRAPH_H_INCLUDED

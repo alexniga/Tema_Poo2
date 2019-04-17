@@ -1,0 +1,452 @@
+#include <iostream>
+#include <fstream>
+#include "graph.h"
+
+using namespace std;
+
+ifstream f("graf.in");
+ofstream g("graf.out");
+
+int Numar_noduri:: numar_noduri = 0;
+
+Vector:: Vector(int *v, int dim)
+{
+    dimensiune = dim;
+    nr_noduri = dim;
+    delete []vec;
+    vec = new int[dim];
+    for (int i = 0; i < dimensiune; i++)
+        vec[i] = v[i];
+}
+
+Vector:: Vector(int nr_nod = 0)
+{
+    this->nr_noduri = nr_nod;
+    this->dimensiune = nr_nod;
+    this->vec = new int[2];
+    for (int i = 0; i < nr_nod; i++)
+        this->vec[i] = 0;
+}
+
+ostream& operator <<(ostream& out, const Vector &v2)
+{
+    for (int i = 0; i < v2.dimensiune; i++)
+        out << v2.vec[i] << " ";
+    return out;
+}
+
+istream& operator >>(istream& in, Vector &v2)
+{
+    in >> v2.dimensiune;
+    delete []v2.vec;
+    v2.vec = new int[v2.dimensiune];
+    for (int i = 0; i < v2.dimensiune; i++)
+        in >> v2.vec[i];
+    return in;
+}
+
+
+Vector& Vector:: operator =(const Vector &v2)
+{
+    if (this == &v2)
+        return *this;
+
+    dimensiune = v2.dimensiune;
+    delete []vec;
+    vec = new int[dimensiune];
+    for (int i = 0; i < dimensiune; i++)
+        vec[i] = v2.vec[i];
+    return (*this);
+}
+
+void Vector::alloc(int dim)
+{
+    delete []vec;
+    vec = new int[dim];
+    for (int i = 0; i < dim; i++)
+        vec[i] = 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////
+//int Lista::numar_noduri = 0;
+///
+void Lista:: alloc(int dim)
+{
+    delete []l;
+    this->l = new Vector[dim];
+}
+Lista:: Lista()
+{
+    this -> l = new Vector[1];
+}
+
+istream& operator >>(istream& in, Lista &lis)
+{
+    in >> lis.numar_noduri;
+    delete []lis.l;
+    lis.l = new Vector[lis.numar_noduri];
+    for (int i = 0; i < lis.numar_noduri; i++)
+    {
+        in >> lis.l[i];
+    }
+    return in;
+}
+
+ostream& operator <<(ostream& out, const Lista &lis)
+{
+    out << lis.numar_noduri << "\n";
+    for (int i = 0; i < lis.numar_noduri; i++)
+    {
+        out << i << ": " << lis.l[i] << " nr de vecini: " << lis.l[i].get_dimensiune() << "\n";
+    }
+    return out;
+}
+int Lista::get_dim_linie(int i)
+{
+    return this->l[i].get_dimensiune();
+}
+int Lista::get_elem_linie_poz(int i, int poz)
+{
+    return this->l[i].get_ele_poz(poz);
+}
+
+Lista& Lista:: operator =(const Lista &lis)
+{
+    if (this == &lis)
+        return (*this);
+    numar_noduri = lis.numar_noduri;
+    delete []l;
+    l = new Vector[numar_noduri];
+    for (int i = 0 ; i < numar_noduri; i++)
+        l[i] = lis.l[i];
+    return (*this);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+Matrice:: Matrice()
+{
+
+    mat = new int*[numar_noduri];
+    for (int i = 0 ; i < numar_noduri; i++)
+        mat[i] = new int[numar_noduri];
+
+    for (int i = 0; i < numar_noduri; i++)
+        for (int j = 0; j < numar_noduri; j++)
+            mat[i][j] = 0;
+
+}
+void Matrice:: set_elem_poz(int i, int j, int ele)
+{
+    this->mat[i][j] = ele;
+}
+
+void Matrice:: alloc_mat(int dim)
+{
+    for (int i = 0; i < numar_noduri; i++)
+        delete []mat[i];
+    delete []mat;
+
+    this->mat = new int*[numar_noduri];
+    for (int i = 0 ; i < numar_noduri; i++)
+        this->mat[i] = new int[numar_noduri];
+    for (int i = 0; i < numar_noduri; i++)
+        for (int j = 0; j < numar_noduri; j++)
+            this->mat[i][j] = 0;
+}
+
+istream& operator >>(istream& in, Matrice &ma)
+{
+    in >> ma.numar_noduri;
+    int nr_noduri = ma.numar_noduri;
+    for (int i = 0; i < ma.numar_noduri; i++)
+        delete []ma.mat[i];
+    delete []ma.mat;
+    ma.mat = new int*[ma.numar_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        ma.mat[i] = new int[nr_noduri];
+    for (int i = 0; i < nr_noduri; i++)
+        for (int j = 0; j < nr_noduri; j++)
+            in >> ma.mat[i][j];
+    return in;
+
+}
+
+ostream& operator <<(ostream& out,const Matrice &ma)
+{
+
+    for(int i = 0 ; i < ma.numar_noduri; i++)
+    {
+        for (int j = 0; j < ma.numar_noduri; j++)
+            out << ma.mat[i][j] << " ";
+        out << "\n";
+    }
+    return out;
+}
+Matrice& Matrice:: operator =(const Matrice &m)
+{
+    if (this == &m)
+        return (*this);
+    for (int i = 0; i < numar_noduri; i++)
+        delete []this->mat[i];
+    delete []this->mat;
+    numar_noduri = m.numar_noduri;
+    this->viz.alloc(numar_noduri);
+    mat = new int*[numar_noduri];
+    for (int i = 0; i < numar_noduri; i++)
+        {
+            mat[i] = new int [numar_noduri];
+            viz.set_ele_poz_vec(i, 0);
+        }
+    for (int i = 0; i < numar_noduri; i++)
+        for (int j = 0; j < numar_noduri; j++)
+              mat[i][j] = m.mat[i][j];
+            //this->set_elem_poz(i, j, m.get_elem_mat(i, j));
+    return (*this);
+}
+///////////////////////////////////////////////////////////////////////
+
+
+ostream& operator <<(ostream& out, const Graf_Neorientat &graph)
+{
+    out << graph.L;
+    return out;
+}
+
+void Graf_Neorientat:: BF(int x)
+{
+    int dim = L.get_nr_noduri();
+    for (int i = 0 ; i < dim; i++)
+        L.viz.set_ele_poz_vec(i, 0);
+    int prim, ultim;
+    L.viz.set_ele_poz_vec(x, 1);
+    cout << x << " ";
+    Vector coada_bf(dim);
+    coada_bf.set_ele_poz_vec(0, x);
+    prim = ultim = 0;
+    while(prim <= ultim)
+    {
+     x = coada_bf.get_ele_poz(prim);
+     prim++;
+     for (int i = 0; i < L.get_dim_linie(x); i++)
+        if(!L.viz.get_ele_poz(L.get_elem_linie_poz(x, i)))
+     {
+         cout << L.get_elem_linie_poz(x, i) << " ";
+         L.viz.set_ele_poz_vec(x, 1);
+         ultim++;
+         coada_bf.set_ele_poz_vec(ultim, L.get_elem_linie_poz(x, i));
+     }
+    }
+}
+void Graf_Neorientat:: DF(int start)
+{
+    cout << start << " ";
+
+    L.viz.set_ele_poz_vec(start, 1);
+
+    for (int i = 0; i < L.get_dim_linie(start); i++)
+        if (!L.viz.get_ele_poz(L.get_elem_linie_poz(start, i)))
+            DF(L.get_elem_linie_poz(start, i));
+}
+
+void Graf_Neorientat:: DF_conex(int start)
+{
+
+    L.viz.set_ele_poz_vec(start, 1);
+    for (int i = 0; i < L.get_dim_linie(start); i++)
+        if (!L.viz.get_ele_poz(L.get_elem_linie_poz(start, i)))
+            DF_conex(L.get_elem_linie_poz(start, i));
+}
+
+
+void Graf_Neorientat:: conexitate(int start)
+{
+
+    int nr = 0, dim;
+    dim = L.get_nr_noduri();
+    for (int i = 0 ; i < dim; i++)
+        L.viz.set_ele_poz_vec(i, 0);
+    for (int i = 0; i < dim; i++)
+    {
+        if(L.viz.get_ele_poz(i) == 0)
+        {
+            nr++;
+            this->DF_conex(i);
+        }
+    }
+    if (nr == 1)
+        cout << "Graful e conex!";
+    else
+        cout << "Graful nu este conex!";
+
+}
+
+Graf_Neorientat& Graf_Neorientat::operator=(const Graf_Neorientat &graph)
+{
+    if (this == &graph)
+        return (*this);
+
+    this->L = graph.L;
+
+    return (*this);
+
+}
+
+////////////////////////////////////////////////////
+
+ostream& operator <<(ostream& out, const Graf_Orientat &graph)
+{
+    out << graph.A;
+    return out;
+}
+
+void Graf_Orientat::BF(int start)
+{
+    for (int i = 0; i < A.get_nr_noduri(); i++)
+        A.viz.set_ele_poz_vec(i, 0);
+
+    int s, d, i, nod;
+    Vector coada_bf(A.get_nr_noduri());
+    s = d = 1;
+    A.viz.set_ele_poz_vec(start, 1);
+    coada_bf.set_ele_poz_vec(s, start);
+    cout << start << " ";
+    while (s <= d)
+    {
+        nod = coada_bf.get_ele_poz(s);
+        for (i = 0; i < A.get_nr_noduri(); i++)
+        {
+            if (A.get_elem_mat(nod, i) == 1 && A.viz.get_ele_poz(i) == 0)
+            {
+                d++;
+                coada_bf.set_ele_poz_vec(d, i);
+                cout << i << " ";
+                A.viz.set_ele_poz_vec(i, 1);
+            }
+        }
+        s++;
+    }
+}
+
+void Graf_Orientat::DF(int start)
+{
+    int i, dim;
+    A.viz.set_ele_poz_vec(start, 1);
+    cout << start << " ";
+    dim = A.get_nr_noduri();
+    for (i = 0; i < dim; i++)
+        if (A.get_elem_mat(start, i) == 1 && A.viz.get_ele_poz(i) == 0 )
+            DF(i);
+
+}
+
+void Graf_Orientat::DF_conex(int start)
+{
+    int i, dim;
+    A.viz.set_ele_poz_vec(start, 1);
+    dim = A.get_nr_noduri();
+    for (i = 0; i < dim; i++)
+        if (A.get_elem_mat(start, i) == 1 && A.viz.get_ele_poz(i) == 0 )
+            DF_conex(i);
+}
+
+void Graf_Orientat::conexitate(int start)
+{
+    int nr = 0, dim, nr_viz, j;
+    dim = A.get_nr_noduri();
+    for (j = 0; j < dim; j++)
+    {
+        nr_viz = 0;
+        for (int i = 0; i < dim; i++)
+            A.viz.set_ele_poz_vec(i, 0);
+         this->DF_conex(j);
+        for (int i = 0; i < dim; i++)
+            if (A.viz.get_ele_poz(i) == 1)
+                nr_viz++;
+        if (nr_viz == dim)
+            nr++;
+    }
+    if (nr == dim)
+        cout << "Este tare conex! \n";
+    else
+        cout << "Nu este tare conex! \n";
+}
+
+Graf_Orientat& Graf_Orientat::operator=(const Graf_Orientat &graph)
+{
+    if (this == &graph)
+        return (*this);
+
+    this->A = graph.A;
+    return (*this);
+}
+
+bool Graf_Neorientat::operator==(Graf_Neorientat &g2)
+{
+    if (this->L.numar_noduri == g2.L.numar_noduri)
+    {
+        for (int i = 0; i < L.numar_noduri; i++)
+        {
+            for (int j = 0 ; j < L.get_dim_linie(i); j++)
+                if (this->L.get_elem_linie_poz(i, j) != g2.L.get_elem_linie_poz(i, j))
+                    return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+bool Graf_Orientat::operator==(Graf_Orientat &g2)
+{
+    if (this->A.get_nr_noduri() == g2.A.get_nr_noduri())
+    {
+        for (int i = 0; i < A.get_nr_noduri(); i++)
+            for (int j = 0 ; j < A.get_nr_noduri(); j++)
+                    if(this->A.get_elem_mat(i, j) != g2.A.get_elem_mat(i, j))
+                        return 0;
+        return 1;
+    }
+    return 0;
+}
+
+int main()
+{
+    int n;
+    Matrice A;
+    Graf_Orientat D(A, A.get_nr_noduri());
+    f >> n;
+   for (int i = 0; i < n; i++)
+   {
+    Matrice B;
+    f >> B;
+    Graf_Orientat C(B,B.get_nr_noduri());
+        if (i >= 1)
+    {
+        cout << "\n ";
+        if (D == C)
+        {
+            cout << "Graful cu numarul " << i - 1 << "este egal cu graful cu numarul " << i << "\n";
+        }
+        else
+           cout << "Graful cu numarul " << i - 1 << " NU este egal cu graful cu numarul " << i << "\n";
+    }
+
+    cout << C << "\n";
+    cout << "Parcurgere DF: "; C.DF(0); cout << "\n";
+    cout << "Parcurgere BF: "; C.BF(0); cout << "\n";
+    cout << "CONEXITATE: \n"; C.conexitate(0); cout <<"\n";
+    D = C;
+
+   }
+    Lista Z;
+    f >> Z;
+   Graf_Neorientat CC(Z, Z.get_nr_noduri());
+   cout << CC << "\n";
+   cout << "Parcurgere DF: "; CC.DF(0); cout << "\n";
+   cout << "Parcurgere BF: "; CC.BF(0); cout << "\n";
+   cout << "CONEXITATE: \n"; CC.conexitate(0); cout <<"\n";
+
+    return 0;
+}
+
